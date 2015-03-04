@@ -308,17 +308,22 @@ public class GridEditor : EditorWindow
 					{
 						Vector3 rayPos = ray.GetPoint( distance );
 						
+						rayPos.x -= gridShiftX;
+						rayPos.z -= gridShiftZ;
+						
 						if( rayPos.x > 0 )
-							rayPos.x = rayPos.x + ( ( gridShiftX - rayPos.x ) % gridSize ) + halfGridSize;
+							rayPos.x = rayPos.x -rayPos.x % gridSize + halfGridSize;
 						else
-							rayPos.x = rayPos.x + ( ( gridShiftX - rayPos.x ) % gridSize ) - halfGridSize;
+							rayPos.x = rayPos.x - rayPos.x % gridSize - halfGridSize;
 						
 						if( rayPos.z > 0 )
-							rayPos.z = rayPos.z + ( ( gridShiftZ - rayPos.z ) % gridSize ) + halfGridSize;
+							rayPos.z = rayPos.z - rayPos.z % gridSize + halfGridSize;
 						else
-							rayPos.z = rayPos.z + ( ( gridShiftZ - rayPos.z ) % gridSize ) - halfGridSize;
+							rayPos.z = rayPos.z - rayPos.z % gridSize - halfGridSize;
+							
+						rayPos.x += gridShiftX;
+						rayPos.z += gridShiftZ;
 						
-						// !?!?!??!? 0 ETRAFINDA SAPITIYOR !?!?!?!?!?
 						// !?!?!?!?!? Right click-left click işi bozuyor !?!?!?!??!?
 						// !?!?!?!?!? prefab listesi !?!?!?!?!?!?
 						
