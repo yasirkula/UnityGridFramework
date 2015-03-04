@@ -2,8 +2,17 @@ using UnityEngine;
 using UnityEditor;
 using System.Collections;
  
+/**
+ * Open source Grid Framework 
+ * for creating grid-based levels 
+ * easily in Unity3D game engine
+ *
+ * @author Suleyman Yasir KULA
+ */
 public class GridEditor : EditorWindow
 {
+	// Inner class to store the grid
+	// properties of a prefab
 	[System.Serializable]
 	private class PrefabData
 	{
@@ -19,22 +28,40 @@ public class GridEditor : EditorWindow
 	
 	private static PrefabData pd;
 	
+	// Is the framework enabled
 	private static bool isEnabled = true;
 	
+	// Some boring variables necessary for
+	// the framework to work
 	private static bool delegated = false;
 	private static GridEditor instance = null;
 	private static Material lineMaterial;
 	
+	// Color of the grids drawn on Scene view
 	private static Color gridlineColor = new Color( 0.8f, 0.8f, 0.8f, 1f );
+	
+	// Size of the grids in both X and Z directions
+	// (a grid is a square)
 	private static float gridSize = 1f;
 	private static float halfGridSize = 0.5f;
+	
+	// Number of grids drawn in X and Z directions
+	// (gridLineCount^2 grids are drawn on XZ-plane)
 	private static int gridlineCount = 50;
+	
+	// Y-position of the grids
 	private static float gridYPos = 0f;
+	// How many units to shift the grids in X
+	// and Z directions
 	private static float gridShiftX = 0f;
 	private static float gridShiftZ = 0f;
+	
+	
 	private static GameObject prefab;
 	private static Vector3 prefabRotation = Vector3.zero;
 	
+	// Preview object that is used to show where
+	// the instantiation will happen
 	private static Transform prefabPreview;
 	
 	private static Vector2 eventMousePressPos = Vector2.one;
