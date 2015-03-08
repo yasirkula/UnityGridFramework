@@ -732,9 +732,9 @@ public class GridEditor : EditorWindow
 			
 			if( e.type == EventType.KeyUp )
 			{
-				if( e.keyCode == KeyCode.W && activePrefab != -1 )
+				if( e.keyCode == KeyCode.T && activePrefab != -1 )
 					prefabList[activePrefab].rotation.y -= 45f;
-				if( e.keyCode == KeyCode.E && activePrefab != -1 )
+				if( e.keyCode == KeyCode.Y && activePrefab != -1 )
 					prefabList[activePrefab].rotation.y += 45f;
 			}
 			
