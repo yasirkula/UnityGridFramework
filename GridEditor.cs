@@ -371,19 +371,6 @@ public class GridEditor : EditorWindow
 			return;
 		}
 		
-		if( isEnabled )
-		{
-			Event e = Event.current;
-			
-			if( e.type == EventType.KeyUp )
-			{
-				if( e.keyCode == KeyCode.W && activePrefab != -1 )
-					prefabList[activePrefab].rotation.y -= 45f;
-				if( e.keyCode == KeyCode.E && activePrefab != -1 )
-					prefabList[activePrefab].rotation.y += 45f;
-			}
-		}
-		
 		GUI.skin.box.alignment = TextAnchor.MiddleCenter;
 		
 		scrollPos = EditorGUILayout.BeginScrollView( scrollPos );
