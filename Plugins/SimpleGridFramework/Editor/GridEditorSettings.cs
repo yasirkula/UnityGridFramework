@@ -1,6 +1,7 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
+using UnityEngine.Serialization;
 
 namespace SimpleGridFramework
 {
@@ -21,7 +22,7 @@ namespace SimpleGridFramework
 	public class PrefabState
 	{
 		public string name;
-		
+
 		public Vector3 rotation = Vector3.zero;
 		public Vector3 shift = Vector3.zero;
 
@@ -36,7 +37,7 @@ namespace SimpleGridFramework
 			this.rotation = rotation;
 			this.shift = shift;
 		}
-		
+
 		public void Draw( GridEditorSettings settings, bool isDefaultState )
 		{
 			string tempStr;
@@ -87,22 +88,25 @@ namespace SimpleGridFramework
 		// Color of the grids drawn on the Scene view
 		public Color gridlineColor = new Color( 0.8f, 0.8f, 0.8f, 1f );
 
-		// Size of the grids in both X and Z directions
-		// (a grid is a square)
+		// Size of the grids (a grid is a square)
 		public float gridSize = 1f;
 
-		// Number of grids drawn in X and Z directions
-		// (gridLineCount^2 grids are drawn on XZ-plane)
+		// Number of grids
 		public int gridlineCount = 50;
 
-		// Y-position of the grids
-		public float gridYPos = 0f;
+		// Alignment plane of the grids
+		public GridEditor.GridAlignment gridAlignment = GridEditor.GridAlignment.XZ;
 
-		// How many units to shift the grids in X
-		// and Z directions
-		public float gridShiftX = 0f;
-		public float gridShiftZ = 0f;
-		
+		// Position of the grids
+		[FormerlySerializedAs( "gridYPos" )]
+		public float gridPos = 0f;
+
+		// How many units to shift the grids
+		[FormerlySerializedAs( "gridShiftX" )]
+		public float gridShiftAxis1 = 0f;
+		[FormerlySerializedAs( "gridShiftZ" )]
+		public float gridShiftAxis2 = 0f;
+
 		public GridState( string name )
 		{
 			this.name = name;
@@ -114,6 +118,7 @@ namespace SimpleGridFramework
 			Color tempClr;
 			float tempFloat;
 			int tempInt;
+			GridEditor.GridAlignment tempEnum;
 
 			EditorGUI.BeginChangeCheck();
 			tempStr = EditorGUILayout.TextField( "Name", name );
@@ -150,27 +155,55 @@ namespace SimpleGridFramework
 			}
 
 			EditorGUI.BeginChangeCheck();
-			tempFloat = EditorGUILayout.FloatField( "Grid Y Pos", gridYPos );
+			tempEnum = (GridEditor.GridAlignment) EditorGUILayout.EnumPopup( "Grid Alignment", gridAlignment );
 			if( EditorGUI.EndChangeCheck() )
 			{
-				Undo.RecordObject( settings, "Change Grid Y Pos" );
-				gridYPos = tempFloat;
+				Undo.RecordObject( settings, "Change Grid Alignment" );
+				gridAlignment = tempEnum;
+			}
+
+			string posLabel, shiftXLabel, shiftZLabel;
+			if( gridAlignment == GridEditor.GridAlignment.XZ )
+			{
+				posLabel = "Grid Y Pos";
+				shiftXLabel = "Grid Shift X";
+				shiftZLabel = "Grid Shift Z";
+			}
+			else if( gridAlignment == GridEditor.GridAlignment.XY )
+			{
+				posLabel = "Grid Z Pos";
+				shiftXLabel = "Grid Shift X";
+				shiftZLabel = "Grid Shift Y";
+			}
+			else
+			{
+				posLabel = "Grid X Pos";
+				shiftXLabel = "Grid Shift Y";
+				shiftZLabel = "Grid Shift Z";
 			}
 
 			EditorGUI.BeginChangeCheck();
-			tempFloat = EditorGUILayout.FloatField( "Grid Shift X", gridShiftX );
+			tempFloat = EditorGUILayout.FloatField( posLabel, gridPos );
 			if( EditorGUI.EndChangeCheck() )
 			{
-				Undo.RecordObject( settings, "Change Grid Shift X" );
-				gridShiftX = tempFloat;
+				Undo.RecordObject( settings, "Change Grid Pos" );
+				gridPos = tempFloat;
 			}
 
 			EditorGUI.BeginChangeCheck();
-			tempFloat = EditorGUILayout.FloatField( "Grid Shift Z", gridShiftZ );
+			tempFloat = EditorGUILayout.FloatField( shiftXLabel, gridShiftAxis1 );
 			if( EditorGUI.EndChangeCheck() )
 			{
-				Undo.RecordObject( settings, "Change Grid Shift Z" );
-				gridShiftZ = tempFloat;
+				Undo.RecordObject( settings, "Change Grid Shift Axis 1" );
+				gridShiftAxis1 = tempFloat;
+			}
+
+			EditorGUI.BeginChangeCheck();
+			tempFloat = EditorGUILayout.FloatField( shiftZLabel, gridShiftAxis2 );
+			if( EditorGUI.EndChangeCheck() )
+			{
+				Undo.RecordObject( settings, "Change Grid Shift Axis 2" );
+				gridShiftAxis2 = tempFloat;
 			}
 		}
 	}
@@ -178,7 +211,7 @@ namespace SimpleGridFramework
 
 	public class GridEditorSettings : ScriptableObject
 	{
-		public const string SAVE_PATH = "Assets/Editor/GridEditorSettings.asset";
+		public const string SAVE_PATH = "Assets/Plugins/SimpleGridFramework/Settings.asset";
 
 		// Is the framework enabled
 		public bool isEnabled = true;
@@ -204,21 +237,8 @@ namespace SimpleGridFramework
 		private List<PrefabState> selectedPrefabStates;
 		private PrefabState defaultPrefabState;
 
-		public GridState GridState
-		{
-			get
-			{
-				return states[currentState];
-			}
-		}
-
-		public GameObject Prefab
-		{
-			get
-			{
-				return selectedPrefab;
-			}
-		}
+		public GridState GridState { get { return states[currentState]; } }
+		public GameObject Prefab { get { return selectedPrefab; } }
 
 		public PrefabState PrefabState
 		{
@@ -236,19 +256,19 @@ namespace SimpleGridFramework
 			}
 		}
 
-		void OnEnable()
+		private void OnEnable()
 		{
 			if( states.Count == 0 )
 				CreateState();
 		}
 
-		void Reset()
+		private void Reset()
 		{
 			if( states.Count == 0 )
 				CreateState();
 		}
 
-		internal void CreateState()
+		private void CreateState()
 		{
 			int index = 1;
 			string name = "State " + index;
@@ -265,7 +285,7 @@ namespace SimpleGridFramework
 			states.Add( new GridState( name ) );
 		}
 
-		internal void UpdateStatesPopupList()
+		public void UpdateStatesPopupList()
 		{
 			statesPopup = new string[states.Count];
 			for( int i = 0; i < states.Count; i++ )
@@ -274,7 +294,7 @@ namespace SimpleGridFramework
 			}
 		}
 
-		internal void UpdatePrefabStatesPopupList()
+		public void UpdatePrefabStatesPopupList()
 		{
 			if( selectedPrefabStates == null )
 				prefabStatesPopup = new string[] { "1. default" };
@@ -427,7 +447,7 @@ namespace SimpleGridFramework
 
 			if( currentState >= states.Count )
 				currentState = states.Count - 1;
-			
+
 			GUILayout.BeginHorizontal();
 
 			EditorGUI.BeginChangeCheck();
@@ -455,7 +475,7 @@ namespace SimpleGridFramework
 				GUI.enabled = false;
 
 			GUI.color = new Color( 1f, 0.5f, 0.5f );
-			
+
 			if( GUILayout.Button( "X", GUILayout.Width( 25f ), GUILayout.Height( 14f ) ) )
 			{
 				Undo.RecordObject( this, "Delete State" );
@@ -501,7 +521,7 @@ namespace SimpleGridFramework
 				{
 					if( currentPrefabState >= selectedPrefabStates.Count )
 						currentPrefabState = selectedPrefabStates.Count - 1;
-					
+
 					EditorGUI.BeginChangeCheck();
 					tempInt = EditorGUILayout.Popup( "Prefab State", currentPrefabState, prefabStatesPopup );
 					if( EditorGUI.EndChangeCheck() )
@@ -550,9 +570,7 @@ namespace SimpleGridFramework
 				state.Draw( this, isDefaultState );
 			}
 			else
-			{
 				EditorGUILayout.HelpBox( "No prefab is selected", MessageType.Info );
-			}
 		}
 	}
 }
