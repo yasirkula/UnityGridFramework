@@ -6,7 +6,7 @@ namespace SimpleGridFramework
 	public class GridEditor : EditorWindow
 	{
 		public enum GridAlignment { XZ = 0, XY = 1, YZ = 2 };
-		
+
 		private GridEditorSettings settings;
 		private GridState gridSettings;
 
@@ -47,8 +47,13 @@ namespace SimpleGridFramework
 			LoadSettings();
 
 			// Register to certain events
+#if UNITY_2019_1_OR_NEWER
+			SceneView.duringSceneGui -= SceneUpdate;
+			SceneView.duringSceneGui += SceneUpdate;
+#else
 			SceneView.onSceneGUIDelegate -= SceneUpdate;
 			SceneView.onSceneGUIDelegate += SceneUpdate;
+#endif
 
 			Undo.undoRedoPerformed -= OnUndoRedo;
 			Undo.undoRedoPerformed += OnUndoRedo;
@@ -66,12 +71,19 @@ namespace SimpleGridFramework
 		// Window is destroyed
 		void OnDisable()
 		{
+			Tools.hidden = false;
+
 			// Destroy prefab preview object when the editor window is closed
 			if( prefabPreview != null )
 				DestroyImmediate( prefabPreview.gameObject );
 
 			// Unregister from events
+#if UNITY_2019_1_OR_NEWER
+			SceneView.duringSceneGui -= SceneUpdate;
+#else
 			SceneView.onSceneGUIDelegate -= SceneUpdate;
+#endif
+
 			Undo.undoRedoPerformed -= OnUndoRedo;
 			Selection.selectionChanged -= OnSelectionChanged;
 		}
@@ -128,7 +140,7 @@ namespace SimpleGridFramework
 
 				if( obj != null )
 				{
-					prefabPreview = ( (GameObject) PrefabUtility.InstantiatePrefab( obj ) ).transform;
+					prefabPreview = ( (GameObject) Instantiate( obj ) ).transform;
 					prefabPreview.localPosition = pos;
 
 					// Preview object should not be visible in the Hierarchy
@@ -158,6 +170,8 @@ namespace SimpleGridFramework
 				prefabPreview.eulerAngles = settings.PrefabState.rotation;
 				SceneView.RepaintAll();
 			}
+
+			Tools.hidden = settings.isEnabled;
 		}
 
 		// Draw the contents of the editor window
@@ -340,10 +354,7 @@ namespace SimpleGridFramework
 				if( e.isMouse )
 				{
 					// Find the position to show the preview object at
-					Camera sceneCam = scenePanel.camera;
-					Vector2 mousePos = e.mousePosition;
-					mousePos.y = sceneCam.pixelRect.height - mousePos.y;
-					Ray ray = sceneCam.ScreenPointToRay( mousePos );
+					Ray ray = HandleUtility.GUIPointToWorldRay( e.mousePosition );
 					float distance;
 
 					Plane plane;
@@ -434,7 +445,12 @@ namespace SimpleGridFramework
 									GUIUtility.hotControl = GUIUtility.GetControlID( GetHashCode(), FocusType.Passive );
 									mousePressValid = true;
 
-									GameObject instance = (GameObject) PrefabUtility.InstantiatePrefab( settings.Prefab );
+									GameObject instance;
+									if( settings.Prefab.transform.root == settings.Prefab.transform )
+										instance = (GameObject) PrefabUtility.InstantiatePrefab( settings.Prefab );
+									else
+										instance = (GameObject) Instantiate( settings.Prefab );
+
 									instance.transform.position = prefabPreview.position;
 									instance.transform.eulerAngles = prefabSettings.rotation;
 									Undo.RegisterCreatedObjectUndo( instance, "Create " + instance.name );

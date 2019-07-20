@@ -1,6 +1,8 @@
 # Unity Simple Grid Framework
 ![screenshot](https://yasirkula.files.wordpress.com/2017/02/grideditor.png)
 
+This plugin helps you place prefabs on a customizable grid easily.
+
 ## Features
 - Simple user-interface
 - Easy-to-use

@@ -311,9 +311,15 @@ namespace SimpleGridFramework
 		public void OnSelectionChanged()
 		{
 			GameObject selectedObject = Selection.activeGameObject;
+#if UNITY_2018_3_OR_NEWER
+			if( selectedObject != null && PrefabUtility.GetPrefabInstanceHandle( selectedObject ) != null )
+			{
+				selectedPrefab = PrefabUtility.GetCorrespondingObjectFromSource( selectedObject );
+#else
 			if( selectedObject != null && PrefabUtility.GetPrefabObject( selectedObject ) != null )
 			{
 				selectedPrefab = (GameObject) PrefabUtility.GetPrefabParent( selectedObject );
+#endif
 				if( selectedPrefab == null )
 					selectedPrefab = selectedObject;
 
@@ -377,7 +383,15 @@ namespace SimpleGridFramework
 					currentPrefabState = 0;
 				}
 
-				selectedPrefabStates[currentPrefabState].rotation.y += yDegrees;
+				Vector3 rotation = selectedPrefabStates[currentPrefabState].rotation;
+				rotation.y += yDegrees;
+
+				while( rotation.y >= 360f )
+					rotation.y -= 360f;
+				while( rotation.y < 0f )
+					rotation.y += 360f;
+
+				selectedPrefabStates[currentPrefabState].rotation = rotation;
 			}
 		}
 
