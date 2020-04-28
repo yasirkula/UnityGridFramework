@@ -112,17 +112,11 @@ namespace SimpleGridFramework
 			showGrids = EditorPrefs.GetBool( PREF_SHOW_GRIDS, true );
 			snapToGrid = EditorPrefs.GetBool( PREF_SNAP_TO_GRID, true );
 
-			// For backwards compatibility
-			if( AssetDatabase.LoadAssetAtPath<GridEditorSettings>( "Assets/Editor/GridEditorSettings.asset" ) )
-			{
-				// Move asset to new position
-				AssetDatabase.MoveAsset( "Assets/Editor/GridEditorSettings.asset", GridEditorSettings.SAVE_PATH );
-				AssetDatabase.SaveAssets();
-			}
-
 			settings = AssetDatabase.LoadAssetAtPath<GridEditorSettings>( GridEditorSettings.SAVE_PATH );
 			if( !settings )
 			{
+				System.IO.Directory.CreateDirectory( System.IO.Path.GetDirectoryName( GridEditorSettings.SAVE_PATH ) );
+
 				settings = CreateInstance<GridEditorSettings>();
 				AssetDatabase.CreateAsset( settings, GridEditorSettings.SAVE_PATH );
 				AssetDatabase.SaveAssets();
