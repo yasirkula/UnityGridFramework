@@ -2,5 +2,8 @@
   "name": "com.yasirkula.gridframework",
   "displayName": "Simple Grid Framework",
   "version": "1.1.0",
+  "documentationUrl": "https://github.com/yasirkula/UnityGridFramework",
+  "changelogUrl": "https://github.com/yasirkula/UnityGridFramework/releases",
+  "licensesUrl": "https://github.com/yasirkula/UnityGridFramework/blob/master/LICENSE.txt",
   "description": "This plugin helps you place prefabs on a customizable grid easily."
 }
